@@ -1,0 +1,17 @@
+{% extends 'organizer/base.html' %}
+
+{% load volunteer %}
+
+{% block title %}{{ event.name }}{% endblock %}
+
+{% block content %}
+
+{% if event.has_waiting_friendship %}
+<div name="waiting_friendship">
+<a href="{% url 'organizer:duo' event.slug %}">Il y a des demandes de duo à valider.</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_script %}
+{% endblock %}

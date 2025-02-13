@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+
+{% block title %}{{ event.name }}{% endblock %}
+
+{% block content %}
+<div name="description">
+<ul name="date">
+ <li>du {{ event.start_date|date:"SHORT_DATETIME_FORMAT" }}</li>
+ <li>au {{ event.end_date|date:"SHORT_DATETIME_FORMAT" }}</li>
+</ul>
+</div>
+{% endblock %}

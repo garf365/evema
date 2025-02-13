@@ -1,0 +1,90 @@
+.time-slot {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-slot:hover {
+    border-color: var(--bs-primary) !important;
+}
+
+.time-slot.selected {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.time-slot.selected i {
+    color: white !important;
+}
+
+.time-slot input {
+  display: none;
+}
+
+form.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.errorlist {
+  color: red !important;
+  font-style: italic;
+  list-style-type: none;
+}
+
+.table-striped>tbody>tr.modified:nth-of-type(even)>* {
+  background: orange;
+}
+
+
+.table-striped>tbody>tr.modified:nth-of-type(odd)>* {
+  background: orange;
+}
+
+.table-striped>tbody>tr.error:nth-of-type(even)>* {
+  background: red;
+}
+
+.table-striped>tbody>tr.error:nth-of-type(odd)>* {
+  background: red;
+}
+
+.modified label:before {
+  content: "* ";
+}
+
+.deleted {
+  text-decoration: wavy line-through red;
+  background: #F5B7B1;
+}
+
+.deleted label {
+  text-decoration: wavy line-through red;
+}
+
+.sortable > div.row {
+  margin: 0 3px 3px 3px;
+  padding: 0.4em;
+  padding-left: 1.5em;
+}
+
+.volunteer-in-slot {
+  color: #fff;
+  background-color: #4e4;
+  border: solid 2px #fff;
+}
+
+.ui-state-highlight {
+  height: 1.5em; 
+  line-height: 1.2em;
+  background-color: #FFEA00;
+}
+
+.schedule-panel a {
+  display: block;
+  margin: 5px;
+}
+
+.slot-filled {
+  text-align: center;
+}

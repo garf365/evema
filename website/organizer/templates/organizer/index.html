@@ -1,0 +1,15 @@
+{% extends 'organizer/base.html' %}
+
+{% block title %}Events{% endblock %}
+
+{% block content %}
+{% if latest_events_list %}
+  <ul>
+    {% for event in latest_events_list %}
+      <li><a href="{% url 'organizer:event' event.slug %}">{{ event.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No events available.</p>
+{% endif %}
+{% endblock %}

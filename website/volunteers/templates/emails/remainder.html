@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>[6h Drôme roller] - Rappel bénévole</title>
+</head>
+<body>
+Bonjour {{ first_name|title }},<br />
+<br />
+Vous êtes inscrit en tant que bénévole sur les 6h Drôme Roll'heure le 1 juin 2025, et nous vous en remercions !<br />
+<br />
+Nous vous envoyons un petit mail de rappel sur vos créneaux de disponibilités :<br />
+<ul>
+{% for slot in slots %}
+ <li>de <b>{{ slot.start|date:"H:i:s" }}</b> à <b>{{ slot.end|date:"H:i:s" }}</b></li>
+{% endfor %}
+</ul>
+<br />
+
+{% if not friend_firstname and not waiting_friend_firstname %}
+Si vous le souhaitez, vous pouvez demander à être en binôme le jour J. N'hésitez pas à nous
+contacter pour nous indiquer avec qui vous souhaitez être et nous ferons le maximum pour
+que vous soyez ensemble.<br />
+{% endif %}
+
+{% if friend_firstname|length > 0 %}
+Pour rappel, vous avez fait la demande d'être en binôme avec <b>{{ friend_firstname|title}} {{ friend_lastname|title }}</b>, qui 
+recevra le même message.<br />
+{% endif %}
+
+{% if waiting_friend_firstname|length > 0%}
+Vous avez fait la demande d'être en binôme avec <b>{{ waiting_friend_firstname|title}} {{ waiting_friend_lastname|title }}</b>.<br />
+<i>Sauf erreur de notre part, votre binôme n'a pas encore rempli le formulaire d'inscription. Pourriez-vous
+lui demander de le faire en se rendant sur https://6h.vercorsmacadamroller.fr ?</i><br />
+{% endif %}
+
+<br />
+Si votre disponibilité avait évolué, avec plus de créneaux \o/ ou moins, ou si vous souhaitez changer de binôme,
+n'hésitez pas à revenir vers nous !<br />
+<br />
+Nous reviendrons vers vous avant l'évènement pour vous indiquer les créneaux horaires finaux.
+<br />
+Toute l'équipe des 6h de Drôme Roll'Heures reste à votre disposition pour toute question:
+<ul>
+ <li>Soit en répondant à cet email (adresse 6hdromerollers@gmail.com)</li>
+ <li>Soit en contactant Gilles au 06.81.92.62.94</li>
+</ul>
+</body>
+</html>

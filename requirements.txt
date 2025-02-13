@@ -1,0 +1,15 @@
+django==5.1
+psycopg[binary]==3.2.1
+django-bootstrap5==24.2
+django-bootstrap-icons==0.9.0
+django-phonenumber-field[phonenumbers]==8.0.0
+django-extensions==3.2.3
+django-recaptcha==4.0.0
+pulp==3.0.2
+daphne==4.1
+Twisted[tls,http2]
+celery
+flower
+django-celery-results
+django-celery-beat
+tox

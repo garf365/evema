@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>[6h Drôme roller] - Planning bénévole</title>
+</head>
+<body>
+Bonjour {{ firstname|title }},<br />
+<br />
+Tu es bénévole à la Drôme Roll'Heures et nous t'en remercions sincèrement.
+Un buffet sera mis à la disposition de l'ensemble des signaleurs.
+Dans une démarche éco événementielle, nous te remercions de bien vouloir amener ton petit nécessaire pour te restaurer : assiette, couverts et gobelet.
+<br />
+<br />
+{% if is_remainder %}
+Le 1er juin prochain, Nous aurions besoin de toi sur les créneaux et postes suivant:
+{% else %}
+Nous venons de terminer le planning pour le jour des 6h. Ainsi, le 1er juin prochain, nous aurions besoin de toi 
+sur les créneaux et postes suivant:
+{% endif %}
+<br />
+
+<ul>
+{% for slot, role in slots.items %}
+ <li>de <b>{{ slot.start|date:"H:i:s" }}</b> à <b>{{ slot.end|date:"H:i:s" }}</b> au poste <b>{{ role.name }}</b></li>
+{% endfor %}
+</ul>
+<br />
+Le jour J, n'hésite pas à aller directement à ton poste à l'heure convenue. Tu peux aussi 
+venir au poste P0, au niveau du départ de la course (et de la buvette) quelques minutes avant si
+tu as des questions.
+<br />
+<i>Pourrais-tu nous confirmer la bonne réception de cet email ?</i>
+<br />
+Encore merci pour ton engagement.
+<br />
+Dans l'attente, et à la moindre question, n'hésite pas à nous contacter : 
+<ul>
+ <li>Soit en répondant à cet email (adresse 6hdromerollers@gmail.com)</li>
+ <li>Soit en contactant Gilles au 06.81.92.62.94</li>
+</ul>
+<img src="cid:plan" alt="plan" />
+</body>
+</html>
+
