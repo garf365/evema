@@ -9,7 +9,5 @@ pulp==3.0.2
 daphne==4.1
 Twisted[tls,http2]
 celery
-flower
 django-celery-results
 django-celery-beat
-tox
