@@ -108,7 +108,7 @@ class RegisterAsVolunteer(generic.detail.SingleObjectMixin, generic.FormView):
             ]
             [s.save() for s in slots]
 
-        #TODO move it to tasks
+        # TODO move it to tasks
         try:
             text_content = render_to_string(
                 "emails/thanks.txt",

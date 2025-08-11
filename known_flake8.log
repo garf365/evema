@@ -5,3 +5,4 @@ website/organizer/views.py:428:89: E501 line too long (90 > 88 characters)
 website/organizer/views.py:493:89: E501 line too long (102 > 88 characters)
 website/organizer/views.py:503:89: E501 line too long (102 > 88 characters)
 website/volunteers/forms.py:72:89: E501 line too long (94 > 88 characters)
+website/volunteers/views.py:111:9: E265 block comment should start with '# '
