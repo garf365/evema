@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>[6h Drôme roller] - Merci pour votre inscription en tant que bénévole!</title>
+</head>
+<body>
+Bonjour {{ firstname|title }},<br />
+<br />
+Merci pour votre inscription en tant que bénévole !<br />
+<br />
+Les créneaux que vous avez sélectionnés sont les suivants :<br />
+<ul>
+{% for slot in slots %}
+ <li>de <b>{{ slot.start|date:"H:i:s" }}</b> à <b>{{ slot.end|date:"H:i:s" }}</b></li>
+{% endfor %}
+</ul>
+<br />
+{% if friend_firstname|length > 0 %}
+Vous avez fait la demande d'être en binôme avec <b>{{ friend_firstname|title}} {{ friend_lastname|title }}</b>. <br />
+<i>Votre binôme doit aussi remplir un formulaire d'inscription.</i></br >
+Nous ferons notre maximum pour que vous soyez réunis durant l'évènement!
+{% endif %}
+<br />
+Nous reviendrons vers vous avant l'évènement pour vous indiquer les créneaux horaires finaux.<br />
+<br />
+Toute l'équipe des 6h de Drôme Roll'Heures reste à votre disposition pour toute question:
+<ul>
+ <li>Soit en répondant à cet email (adresse 6hdromerollers@gmail.com)</li>
+ <li>Soit en contactant Gilles au 06.81.92.62.94</li>
+</ul>
+</body>
+</html>

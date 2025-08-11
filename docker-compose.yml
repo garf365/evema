@@ -1,0 +1,120 @@
+services:
+##########################################################
+  db:
+    image: postgres:latest
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    attach: false
+##########################################################
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - 15672:15672
+    volumes:
+      - ./data/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./data/rabbitmq/log/:/var/log/rabbitmq
+    attach: false
+##########################################################
+  celery_worker:
+    build: .
+    image: benevole_app
+    command: /start-celeryworker
+    deploy:
+      mode: replicated
+      replicas: 2
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER_URL=pyamqp://guest@rabbitmq//
+      - SECRET_KEY=secret
+      - SQL_ENGINE=django.db.backends.postgresql
+      - SQL_DATABASE=postgres
+      - SQL_USER=postgres
+      - SQL_PASSWORD=postgres
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      - DJANGO_SETTINGS_MODULE=website.settings
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./website:/code
+##########################################################
+  celery_beat:
+    build: .
+    image: benevole_app
+    command: /start-celerybeat
+    environment:
+      - CELERY_BROKER_URL=pyamqp://guest@rabbitmq//
+      - SECRET_KEY=secret
+      - SQL_ENGINE=django.db.backends.postgresql
+      - SQL_DATABASE=postgres
+      - SQL_USER=postgres
+      - SQL_PASSWORD=postgres
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      - DJANGO_SETTINGS_MODULE=website.settings
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./website:/code
+##########################################################
+  web:
+    build: .
+    image: benevole_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./website:/code
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=secret
+      - SQL_ENGINE=django.db.backends.postgresql
+      - SQL_DATABASE=postgres
+      - SQL_USER=postgres
+      - SQL_PASSWORD=postgres
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      - DJANGO_SETTINGS_MODULE=website.settings
+    stdin_open: true
+    tty: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - db
+      - rabbitmq
+      - celery_worker
+      - celery_beat
+##########################################################
+  flower:
+    build: .
+    image: benevole_app
+    command: /start-flower
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER_URL=pyamqp://guest@rabbitmq//
+      - FLOWER_UNAUTHENTICATED_API=true
+    depends_on:
+      - rabbitmq
+      - celery_worker
+      - celery_beat
+    volumes:
+      - ./website:/code
+    attach: false
+##########################################################
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=gilles@famille-fritz.fr
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    depends_on:
+      - db
+    attach: false

@@ -1,0 +1,190 @@
+{% extends 'organizer/base.html' %}
+
+{% load volunteer %}
+{% load keyvalue %}
+
+{% block title %}{{ event.name }} - Bénévoles{% endblock %}
+
+{% block content %}
+
+{% if event.has_waiting_friendship %}
+<div id="waiting_friendship">
+<a href="{% url 'organizer:duo' event.slug %}">Il y a des demandes de duo à valider.</a>
+</div>
+{% endif %}
+
+
+<div id="volunteers">
+ <form action="{% url 'organizer:volunteers' event.slug %}" method="post">
+  {% csrf_token %}
+ {{ form.errors }}
+ {{ formset.non_form_errors }}
+ {{ formset.management_form }}
+ {{ form }}
+ <table class="table table-striped table-bordered table-hover table-sm">
+  <thead class="thead-dark">
+   <tr scope="row">
+    <th scope="col">Nom</th>
+    <th scope="col">Duo</th>
+    <th scope="col">Roles possibles</th>
+    {% for slot in event.schedule_slots %}
+    <th scope="col">{{ slot.start|date:"H:i" }}</th>
+    {% endfor %}
+    <th scope="col">Supprimer</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for form in formset %}
+   <tr scope="row" data-availability-id="{{ form.availability.id}}">
+    <td scope="col" class="volunteer" data-availability-id="{{ form.availability.id}}"> 
+      {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+      {% endfor %}
+      {{ form.availability.volunteer.lastname|upper }} {{ form.availability.volunteer.firstname|capfirst }} 
+      {% if form.availability.notes %}
+       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#notes-{{ form.availability.id }}" aria-expanded="false" aria-controls="notes-{{ form.availability.id }}">
+        <i class="bi bi-file-earmark-plus"></i>
+       </button>
+       <div class="collapse" id="notes-{{ form.availability.id }}">
+        <div class="card card-body">
+         {{ form.availability.notes }}
+        </div>
+       </div>
+      {% endif %}
+    </td>
+    <td scope="col" class="friend" data-availability-id="{{ form.availability.id}}"> {% if form.availability.friend %}
+    {{ form.availability.friend.volunteer.lastname|upper }} {{ form.availability.friend.volunteer.firstname|capfirst }}
+    {% endif %}
+    </td>
+    <td scope="col" class="categories tracking" data-availability-id="{{ form.availability.id}}"> 
+    {{ form.categories }}
+    </td>
+    {% for slot in form.slots %}
+    <td scope="col" class="slot tracking" data-availability-id="{{ form.availability.id}}">
+      {{ slot.tag }}
+    </td>
+    {% endfor %}
+    <td scope="col" class="delete" data-availability-id="{{ form.availability.id }}">
+      <button type="button" class="btn btn-outline-danger deleter" alt="supprimer"> 
+        <i class="bi bi-trash"></i>
+        {{ form.DELETE }}
+      </button>
+    </td>
+  </tr>
+   {% endfor %}
+  </tbody>
+ </table>
+ <button type="submit" class="btn btn-outline-primary" alt="sauvegarder" value="update" name="action" id="save" disabled="true">
+   <i class="bi bi-calendar-check"></i> Sauvegarder
+ </button>
+ </form>
+</div>
+
+<div>
+ <a href="{% url 'organizer:dump' event.slug %}">Télécharger la liste des bénévoles</a>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+
+$(document).ready(function() {
+
+  let initial = {};
+  let modified = [];
+  let deleted = [];
+  
+  $("#volunteers table tbody tr").each(function() {
+    let availability_id = $(this).data("availability-id");
+    initial[availability_id]={};
+
+    $(this).children('td.tracking').find('input').each(function() {
+      initial[availability_id][$(this).val()] = $(this).is(':checked');
+    });
+  });
+
+  const update_save_button = function() {
+    if (modified.length == 0 && deleted.length == 0) {
+      $('#save').prop('disabled', true);
+      $('#save').removeClass('btn-primary');
+      $('#save').addClass('btn-outline-primary');
+    }
+    else {
+      $('#save').prop('disabled', false);
+      $('#save').addClass('btn-primary');
+      $('#save').removeClass('btn-outline-primary');
+    }
+  };
+
+  update_save_button();
+
+  $(".tracking input").click(function(evt) {
+    if (modified.length == 0) {
+      $('head title').prepend("*");
+    }
+
+    let tr = $(this).closest('tr');
+
+    current = {};
+    tr.children('td.tracking').find('input').each(function() {
+      current[$(this).val()] = $(this).is(':checked');
+    });
+
+    let isModified = JSON.stringify(current) != JSON.stringify(initial[tr.data('availability-id')]);
+
+    if (isModified) {
+      tr.children("td:first").addClass("modified");
+      modified.push(tr.data('availability-id'));
+    }
+    else {
+      tr.children("td:first").removeClass("modified");
+      modified = modified.filter(id => id != tr.data('availability-id'));
+    }
+
+    if (modified.length == 0) {
+      $('head title').html($('head title').html().substring(1));
+    }
+
+    update_save_button();
+  });
+
+  $(".deleter > input").hide();
+
+  $(".deleter").click(function() {
+    $(this).toggleClass("btn-danger");
+    $(this).toggleClass("btn-outline-danger");
+    $(this).children("input").prop("checked", function(_, val) { return !val; });
+    $(this).closest('tr').toggleClass("deleted")
+
+    if ($(this).children("input").is(':checked')) {
+      deleted.push($(this).data("availability-id"));
+    }
+    else {
+      deleted = deleted.filter(id => id != $(this).data('availability-id'));
+    }
+
+    update_save_button();
+  });
+
+});
+
+function SetModified(volunteer_availability_id) {
+  if (!modified) {
+    $('head title').prepend("*");
+    $('#volunteer-' + volunteer_availability_id).prepend('*');
+    modified = true;
+
+    $('table tbody tr').each(function(index) {
+      if ($(this).attr('id') != volunteer_availability_id) {
+        $(this).children('td').children('input').prop("disabled", true);
+        $(this).children('td').children('button').prop("disabled", true);
+      }
+    });
+
+    return true;
+  }
+  return false;
+}
+
+</script>
+{% endblock %}

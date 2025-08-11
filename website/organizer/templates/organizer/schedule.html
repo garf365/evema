@@ -1,0 +1,36 @@
+{% extends 'organizer/base.html' %}
+
+{% load volunteer %}
+
+{% block title %}{{ event.name }} - Planning{% endblock %}
+
+{% block content %}
+<div name="description">
+<ul name="date">
+ <li>du {{ event.start_date|date:"SHORT_DATETIME_FORMAT" }}</li>
+ <li>au {{ event.end_date|date:"SHORT_DATETIME_FORMAT" }}</li>
+</ul>
+</div>
+<div name="schedule">
+ <a href="{% url 'organizer:schedule_generate' event.slug %}" class="btn btn-primary">Générer automatiquement un nouveau planning</a>
+ <a href="{% url 'organizer:schedule_new' event.slug %}" class="btn btn-primary">Créer un nouveau planning</a>
+ <ul name="planner">
+  {% for schedule in schedules %}
+  <li><a href="{% url 'organizer:schedule_detail' event.slug schedule.id%}">
+   <span class="schedule-type">{{ schedule.type }}</span>
+  {% if schedule.name %}
+   {{ schedule.name }} (saved at {{ schedule.saved_at|date:"SHORT_DATETIME_FORMAT" }}) 
+  {% else %}
+   {{ schedule.saved_at|date:"SHORT_DATETIME_FORMAT" }}
+  {% endif %}
+  </a></li>
+  {% endfor %}
+ </ul>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+</script>
+{% endblock %}
+

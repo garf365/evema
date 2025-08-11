@@ -1,0 +1,125 @@
+{% extends 'organizer/base.html' %}
+
+{% load volunteer %}
+
+{% block title %}{{ event.name }} - postes{% endblock %}
+
+{% block content %}
+
+<div name="roles">
+ <form action="{% url 'organizer:roles' event.slug %}" method="post">
+  {% csrf_token %}
+ {{ form.errors }}
+ {{ formset.non_form_errors }}
+ {{ formset.management_form }}
+ {{ form }}
+ <div class="container sortable" id="formset">
+ {% for form in formset %}
+   {% include "organizer/roleform.html" %}
+ {% endfor %}
+ </div>
+ <div class="container">
+  <div class="row">
+   <div class="col text-center">
+    <button type="button" class="btn btn-success" alt="ajout rôle" id="add">
+     <i class="bi bi-plus"></i> Nouveau rôle
+    </button>
+   </div>
+  </div>
+ </div>
+
+ <button type="submit" class="btn btn-primary" alt="sauvegarder" value="update" name="action" id="save">
+   <i class="bi bi-calendar-check"></i> Sauvegarder
+ </button>
+ </form>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+let template_role = `
+   {% include "organizer/roleform.html" with form=formset.empty_form %}
+`;
+$(document).ready(function() {
+  let init_datetime_picker = function() {
+    $('input[id*=_date_0]').datepicker();
+    $('input[id*=_date_1]').timepicker({
+      timeFormat: 'HH:mm',
+      interval: 60,
+      minTime: '8:00am',
+      maxTime: '6:00pm',
+      startTime: '8:00am',
+      dynamic: false,
+      dropdown: true,
+      scrollbar: true
+    });
+  };
+
+  let deleter = function() {
+    let role_div = $(this).closest('div.sort-item');
+    if (role_div.data('is-new')) {
+      role_div.remove();
+
+      let total_form = $('#id_role-TOTAL_FORMS');
+      let form_idx = total_form.val();
+      total_form.val(parseInt(form_idx)-1);
+
+      $('div.sort-item').each(function(idx) {
+        $(this).find('.role [name^=role-]').each(function() {
+          let elem = $(this);
+
+          let old_id = elem.attr('id').match(/role-\d+-/g);
+
+          elem.attr('id', elem.attr('id').replace(old_id, "role-"+idx+"-"));
+          elem.attr('name', elem.attr('name').replace(old_id, "role-"+idx+"-"));
+        });
+      });
+    } else {
+      $(this).toggleClass("btn-danger");
+      $(this).toggleClass("btn-outline-danger");
+      $(this).children("input").prop("checked", function(_, val) { return !val; });
+      $(this).closest('div.sort-item').toggleClass("deleted")
+    }
+  };
+
+  let store_order = function() {
+      let inputs = $('input[id*=-ORDER]');
+      inputs.each(function(idx) {
+        $(this).val(idx + 1);
+      });
+    };
+
+  init_datetime_picker();
+
+  $(".sortable").sortable({
+    items: "> .sort-item",
+    stop: store_order,
+  });
+  $(".sortable").disableSelection();
+
+  $("#add").click(function() {
+    let total_form = $('#id_role-TOTAL_FORMS');
+    let form_idx = total_form.val();
+
+    let new_role = template_role.replace(/__prefix__/g, form_idx);
+    $('.sortable').append(new_role);
+    $('.sortable').sortable('refresh');
+
+    let new_role_div = $('.sortable > div:last-child');
+    new_role_div.find('.deleter > input').hide();
+    new_role_div.find('.deleter').click(deleter);
+    new_role_div.data("is-new", true);
+
+    total_form.val(parseInt(form_idx)+1);
+
+    init_datetime_picker();
+    store_order();
+
+  });
+
+  $(".deleter > input").hide();
+  $(".deleter").click(deleter);
+});
+</script>
+{% endblock %}
+
+
