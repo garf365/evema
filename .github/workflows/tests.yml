@@ -28,6 +28,7 @@ jobs:
         run: python -m pip install tox
       - name: Run tox
         run: tox
+
   format:
     runs-on: ubuntu-latest
     strategy:
@@ -52,7 +53,7 @@ jobs:
       - name: Run black
         run: tox -e black
       - name: Check if something has changed
-        run: ! [[ $(git status --porcelain) ]]
+        run: ./check_format.sh
   
   lint:
     runs-on: ubuntu-latest
