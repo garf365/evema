@@ -39,6 +39,7 @@ services:
       - DJANGO_SETTINGS_MODULE=website.settings
     depends_on:
       - rabbitmq
+      - db
     volumes:
       - ./website:/code
 ##########################################################
@@ -58,6 +59,7 @@ services:
       - DJANGO_SETTINGS_MODULE=website.settings
     depends_on:
       - rabbitmq
+      - db
     volumes:
       - ./website:/code
 ##########################################################
@@ -100,8 +102,6 @@ services:
       - FLOWER_UNAUTHENTICATED_API=true
     depends_on:
       - rabbitmq
-      - celery_worker
-      - celery_beat
     volumes:
       - ./website:/code
     attach: false
