@@ -51,6 +51,8 @@ jobs:
         run: tox -e isort
       - name: Run black
         run: tox -e black
+      - name: Check if something has changed
+        run: ! [[ $(git status --porcelain) ]]
   
   lint:
     runs-on: ubuntu-latest
