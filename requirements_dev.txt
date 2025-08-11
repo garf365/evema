@@ -1,3 +1,4 @@
 flower
 tox
-
+coverage
+unittest-xml-reporting

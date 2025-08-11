@@ -182,3 +182,8 @@ MAILER_RATE_LIMIT = "6/h"
 MAILER_MAX_RETRY = 5
 MAILER_DELAY_BEFORE_RETRY = 30 * 60
 MAILER_GROUP_BY = 10
+
+TEST_RUNNER = "xmlrunner.extra.djangotestrunner.XMLTestRunner"
+
+TEST_OUTPUT_DIR = "../build"
+TEST_OUTPUT_FILE_NAME = "tests.xml"
