@@ -1,5 +1,5 @@
 django==5.2
-psycopg[binary]==3.2.1
+psycopg[binary]==3.2.9
 django-bootstrap5==24.2
 django-bootstrap-icons==0.9.0
 django-phonenumber-field[phonenumbers]==8.0.0
