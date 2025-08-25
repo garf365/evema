@@ -12,7 +12,13 @@
 </ul>
 </div>
 <div name="schedule">
- <a href="{% url 'organizer:schedule_generate' event.slug %}" class="btn btn-primary">Générer automatiquement un nouveau planning</a>
+ {% if generation_in_progress %}
+  <div>
+   Une génération est en cours, elle sera bientôt disponible.
+  </div>
+ {% else %}
+  <a href="{% url 'organizer:schedule_generate' event.slug %}" class="btn btn-primary">Générer automatiquement un nouveau planning</a>
+ {% endif %}
  <a href="{% url 'organizer:schedule_new' event.slug %}" class="btn btn-primary">Créer un nouveau planning</a>
  <ul name="planner">
   {% for schedule in schedules %}

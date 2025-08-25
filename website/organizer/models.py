@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 
 from common.fields import Slot
+from django.conf import settings
 from django.db import models
 from django.db.models import Count, Q
 from django.utils.timezone import now
@@ -24,6 +25,7 @@ class EventWithSchedule(EventWithVolunteers):
         return Slot.create_slots(
             self.slot_duration_schedule, self.start_date, self.end_date
         )
+
 
 
 class EventSchedule(models.Model):
@@ -152,6 +154,15 @@ class EventSchedule(models.Model):
 
         return schedule
 
+class EventScheduleBeingGenerated(models.Model):
+    event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    base = models.ForeignKey(EventSchedule, on_delete=models.SET_NULL, null=True, blank=True, related_name="+") 
+    task_uuid = models.CharField(max_length=36, null=False, blank=False)
+    result = models.ForeignKey(EventSchedule, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('event', 'result')
 
 class EventScheduleSlot(models.Model):
     schedule = models.ForeignKey(EventSchedule, on_delete=models.CASCADE, null=False)

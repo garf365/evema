@@ -32,7 +32,11 @@
    {% if eventschedule.validated_at %}
    <h3>Validé le {{ eventschedule.validated_at|date:"SHORT_DATE_FORMAT" }} à {{ eventschedule.validated_at|date:"H:i:s" }}</h3>
    {% else %}
-   <a href="{% url 'organizer:schedule_complete' event.slug eventschedule.id %}" class="btn btn-primary">Compléter ce planning automatiquement</a>
+   {% if generation_in_progress %}
+    Ce planning est en cours de complétion automatique, il sera bientôt disponible.
+   {% else %}
+    <a href="{% url 'organizer:schedule_complete' event.slug eventschedule.id %}" class="btn btn-primary">Compléter ce planning automatiquement</a>
+   {% endif %}
    <a href="{% url 'organizer:schedule_edit' event.slug eventschedule.id %}" class="btn btn-primary">Modifier ce planning</a>
    <a href="{% url 'organizer:schedule_validate' event.slug eventschedule.id %}" class="btn btn-success">Valider ce planning</a>
    {% if eventschedule.can_delete %}
@@ -53,6 +57,8 @@
    </div>
   </div>
  </div>
+
+<!-- TODO Display every generated schedule from this one -->
 
  <div id="by_volunteer" class="table-responsive-sm">
   <h3>Par bénévole</h3> 

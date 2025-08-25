@@ -14,7 +14,9 @@ from volunteers.models import VolunteerFriendshipWaiting
 
 from celery import shared_task
 
-from .models import EventSchedule, ScheduleEventRemainder
+from django.db import transaction
+from .models import EventSchedule, ScheduleEventRemainder, EventScheduleSlot
+from .scheduling import FriendMode, Scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -210,3 +212,44 @@ def volunteers_remainder(self):
 
     for remaind in remainders:
         remaind.save()
+
+@shared_task(bind=True)
+def generate_schedule(self, event, base, friend_mode):
+    scheduler = Scheduler(event, base)
+    scheduler.friend_mode = friend_mode
+    if scheduler.is_valid:
+        with transaction.atomic():
+            schedule = EventSchedule(
+                event=event,
+                based_on=base,
+                type=EventSchedule.ScheduleType.GENERATED,
+            )
+
+            schedule_slots = []
+            for volunteer, slots in scheduler.schedule.items():
+                for slot, role in slots.items():
+                    schedule_slots.append(
+                        EventScheduleSlot(
+                            schedule=schedule,
+                            volunteer=volunteer,
+                            start_date=slot.start,
+                            end_date=slot.end,
+                            role=role[0],
+                            position=role[1],
+                        )
+                    )
+            for role, slots in scheduler.missing.items():
+                for slot in slots:
+                    schedule_slots.append(
+                        EventScheduleSlot(
+                            schedule=schedule,
+                            start_date=slot.start,
+                            end_date=slot.end,
+                            role=role[0],
+                            position=role[1],
+                        )
+                    )
+
+            schedule.save()
+            EventScheduleSlot.objects.bulk_create(schedule_slots)
+

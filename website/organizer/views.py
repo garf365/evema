@@ -19,8 +19,9 @@ from volunteers.models import VolunteerAvailability, VolunteerSlot
 
 from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet
 from .models import EventSchedule, EventScheduleSlot, EventWithSchedule
-from .scheduling import FriendMode, Scheduler
+from .scheduling import FriendMode
 from .tasks import send_volunteer_slots
+from .tasks import generate_schedule
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class ScheduleListView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         kwargs = kwargs | {
-            "schedules": self.object.eventschedule_set.order_by("-saved_at")
+            "schedules": self.object.eventschedule_set.order_by("-saved_at"),
+            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(result=None).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -58,6 +60,7 @@ class ScheduleView(generic.DetailView):
             "missings": self.object.get_missing_by_slots(),
             "by_roles": self.object.get_schedule_by_roles(),
             "by_volunteers": self.object.get_schedule_by_volunteers(),
+            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(result=None, base=self.object).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -335,50 +338,8 @@ class ScheduleGenerateView(generic.detail.SingleObjectMixin, View):
         if "base_id" in self.kwargs:
             self.base = get_object_or_404(EventSchedule, pk=self.kwargs["base_id"])
         self.object = self.get_object()
-        scheduler = Scheduler(self.object, self.base)
-        scheduler.friend_mode = FriendMode.AT_BEST
-        if scheduler.is_valid:
-            with transaction.atomic():
-                schedule = EventSchedule(
-                    event=self.object,
-                    based_on=self.base,
-                    type=EventSchedule.ScheduleType.GENERATED,
-                )
+        generate_schedule.delay(self.object, self.base, FriendMode.AT_BEST)
 
-                schedule_slots = []
-                for volunteer, slots in scheduler.schedule.items():
-                    for slot, role in slots.items():
-                        schedule_slots.append(
-                            EventScheduleSlot(
-                                schedule=schedule,
-                                volunteer=volunteer,
-                                start_date=slot.start,
-                                end_date=slot.end,
-                                role=role[0],
-                                position=role[1],
-                            )
-                        )
-                for role, slots in scheduler.missing.items():
-                    for slot in slots:
-                        schedule_slots.append(
-                            EventScheduleSlot(
-                                schedule=schedule,
-                                start_date=slot.start,
-                                end_date=slot.end,
-                                role=role[0],
-                                position=role[1],
-                            )
-                        )
-
-                schedule.save()
-                EventScheduleSlot.objects.bulk_create(schedule_slots)
-
-            return HttpResponseRedirect(
-                reverse(
-                    "organizer:schedule_detail",
-                    kwargs={"slug": self.object.slug, "id": schedule.id},
-                )
-            )
         return HttpResponseRedirect(
             reverse("organizer:schedule", kwargs={"slug": self.object.slug})
         )
