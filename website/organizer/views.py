@@ -2,7 +2,7 @@ import csv
 import logging
 from datetime import datetime
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import (
     Http404,
     HttpResponseForbidden,
@@ -18,9 +18,14 @@ from volunteers.forms import AvailabilityUpdateDeleteFormSet, FriendshipEditForm
 from volunteers.models import VolunteerAvailability, VolunteerSlot
 
 from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet
-from .models import EventSchedule, EventScheduleSlot, EventWithSchedule
-from .scheduling import FriendMode, Scheduler
-from .tasks import send_volunteer_slots
+from .models import (
+    EventSchedule,
+    EventScheduleBeingGenerated,
+    EventScheduleSlot,
+    EventWithSchedule,
+)
+from .scheduling import FriendMode
+from .tasks import generate_schedule, send_volunteer_slots
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +45,10 @@ class ScheduleListView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         kwargs = kwargs | {
-            "schedules": self.object.eventschedule_set.order_by("-saved_at")
+            "schedules": self.object.eventschedule_set.order_by("-saved_at"),
+            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(
+                result=None, base=None
+            ).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -58,6 +66,9 @@ class ScheduleView(generic.DetailView):
             "missings": self.object.get_missing_by_slots(),
             "by_roles": self.object.get_schedule_by_roles(),
             "by_volunteers": self.object.get_schedule_by_volunteers(),
+            "generation_in_progress": self.object.generated_as_base.filter(
+                result=None
+            ).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -335,48 +346,29 @@ class ScheduleGenerateView(generic.detail.SingleObjectMixin, View):
         if "base_id" in self.kwargs:
             self.base = get_object_or_404(EventSchedule, pk=self.kwargs["base_id"])
         self.object = self.get_object()
-        scheduler = Scheduler(self.object, self.base)
-        scheduler.friend_mode = FriendMode.AT_BEST
-        if scheduler.is_valid:
-            with transaction.atomic():
-                schedule = EventSchedule(
-                    event=self.object,
-                    based_on=self.base,
-                    type=EventSchedule.ScheduleType.GENERATED,
-                )
 
-                schedule_slots = []
-                for volunteer, slots in scheduler.schedule.items():
-                    for slot, role in slots.items():
-                        schedule_slots.append(
-                            EventScheduleSlot(
-                                schedule=schedule,
-                                volunteer=volunteer,
-                                start_date=slot.start,
-                                end_date=slot.end,
-                                role=role[0],
-                                position=role[1],
-                            )
-                        )
-                for role, slots in scheduler.missing.items():
-                    for slot in slots:
-                        schedule_slots.append(
-                            EventScheduleSlot(
-                                schedule=schedule,
-                                start_date=slot.start,
-                                end_date=slot.end,
-                                role=role[0],
-                                position=role[1],
-                            )
-                        )
+        try:
+            memo = EventScheduleBeingGenerated(
+                event=self.object,
+                owner=request.user,
+                base=self.base,
+                task_uuid="tbd",
+                result=None,
+            )
 
-                schedule.save()
-                EventScheduleSlot.objects.bulk_create(schedule_slots)
+            memo.save()
+            generate_schedule.delay_on_commit(
+                memo, self.object, self.base, FriendMode.AT_BEST
+            )
 
+        except IntegrityError:
+            pass
+
+        if self.base:
             return HttpResponseRedirect(
                 reverse(
                     "organizer:schedule_detail",
-                    kwargs={"slug": self.object.slug, "id": schedule.id},
+                    kwargs={"slug": self.object.slug, "id": self.base.id},
                 )
             )
         return HttpResponseRedirect(
