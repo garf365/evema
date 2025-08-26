@@ -2,7 +2,7 @@ import csv
 import logging
 from datetime import datetime
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.http import (
     Http404,
     HttpResponseForbidden,
@@ -18,7 +18,7 @@ from volunteers.forms import AvailabilityUpdateDeleteFormSet, FriendshipEditForm
 from volunteers.models import VolunteerAvailability, VolunteerSlot
 
 from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet
-from .models import EventSchedule, EventScheduleSlot, EventWithSchedule
+from .models import EventSchedule, EventScheduleSlot, EventWithSchedule, EventScheduleBeingGenerated
 from .scheduling import FriendMode
 from .tasks import send_volunteer_slots
 from .tasks import generate_schedule
@@ -338,8 +338,28 @@ class ScheduleGenerateView(generic.detail.SingleObjectMixin, View):
         if "base_id" in self.kwargs:
             self.base = get_object_or_404(EventSchedule, pk=self.kwargs["base_id"])
         self.object = self.get_object()
-        generate_schedule.delay(self.object, self.base, FriendMode.AT_BEST)
 
+        try:
+            memo = EventScheduleBeingGenerated(
+                event = self.object,
+                owner=request.user,
+                base=self.base,
+                task_uuid="tbd",
+                result=None
+            )
+
+            memo.save()
+            task = generate_schedule.delay(memo, self.object, self.base, FriendMode.AT_BEST)
+
+            memo.task_uuid = task
+            memo.save()
+        except IntegrityError:
+            pass
+
+        if self.base:
+            return HttpResponseRedirect(
+                reverse("organizer:schedule_detail", kwargs={"slug": self.object.slug, "id": self.base.id})
+            )
         return HttpResponseRedirect(
             reverse("organizer:schedule", kwargs={"slug": self.object.slug})
         )

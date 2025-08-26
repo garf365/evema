@@ -214,7 +214,7 @@ def volunteers_remainder(self):
         remaind.save()
 
 @shared_task(bind=True)
-def generate_schedule(self, event, base, friend_mode):
+def generate_schedule(self, memo, event, base, friend_mode):
     scheduler = Scheduler(event, base)
     scheduler.friend_mode = friend_mode
     if scheduler.is_valid:
@@ -252,4 +252,7 @@ def generate_schedule(self, event, base, friend_mode):
 
             schedule.save()
             EventScheduleSlot.objects.bulk_create(schedule_slots)
+
+            memo.result=schedule
+            memo.save()
 

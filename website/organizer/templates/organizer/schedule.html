@@ -14,7 +14,7 @@
 <div name="schedule">
  {% if generation_in_progress %}
   <div>
-   Une génération est en cours, elle sera bientôt disponible.
+   Une génération est en cours, il sera bientôt disponible.
   </div>
  {% else %}
   <a href="{% url 'organizer:schedule_generate' event.slug %}" class="btn btn-primary">Générer automatiquement un nouveau planning</a>
