@@ -6,6 +6,7 @@ from functools import lru_cache
 from common.fields import Slot
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db import transaction
 from django.db.models import F
 from django.template.loader import render_to_string
 from django.utils.timezone import now
@@ -14,9 +15,8 @@ from volunteers.models import VolunteerFriendshipWaiting
 
 from celery import shared_task
 
-from django.db import transaction
-from .models import EventSchedule, ScheduleEventRemainder, EventScheduleSlot
-from .scheduling import FriendMode, Scheduler
+from .models import EventSchedule, EventScheduleSlot, ScheduleEventRemainder
+from .scheduling import Scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -213,8 +213,11 @@ def volunteers_remainder(self):
     for remaind in remainders:
         remaind.save()
 
+
 @shared_task(bind=True)
 def generate_schedule(self, memo, event, base, friend_mode):
+    memo.task_uuid = self.request.id
+    memo.save()
     scheduler = Scheduler(event, base)
     scheduler.friend_mode = friend_mode
     if scheduler.is_valid:
@@ -253,6 +256,5 @@ def generate_schedule(self, memo, event, base, friend_mode):
             schedule.save()
             EventScheduleSlot.objects.bulk_create(schedule_slots)
 
-            memo.result=schedule
+            memo.result = schedule
             memo.save()
-

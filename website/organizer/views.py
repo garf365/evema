@@ -2,7 +2,7 @@ import csv
 import logging
 from datetime import datetime
 
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import (
     Http404,
     HttpResponseForbidden,
@@ -18,10 +18,14 @@ from volunteers.forms import AvailabilityUpdateDeleteFormSet, FriendshipEditForm
 from volunteers.models import VolunteerAvailability, VolunteerSlot
 
 from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet
-from .models import EventSchedule, EventScheduleSlot, EventWithSchedule, EventScheduleBeingGenerated
+from .models import (
+    EventSchedule,
+    EventScheduleBeingGenerated,
+    EventScheduleSlot,
+    EventWithSchedule,
+)
 from .scheduling import FriendMode
-from .tasks import send_volunteer_slots
-from .tasks import generate_schedule
+from .tasks import generate_schedule, send_volunteer_slots
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +46,9 @@ class ScheduleListView(generic.DetailView):
     def get_context_data(self, **kwargs):
         kwargs = kwargs | {
             "schedules": self.object.eventschedule_set.order_by("-saved_at"),
-            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(result=None).exists(),
+            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(
+                result=None, base=None
+            ).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -60,7 +66,9 @@ class ScheduleView(generic.DetailView):
             "missings": self.object.get_missing_by_slots(),
             "by_roles": self.object.get_schedule_by_roles(),
             "by_volunteers": self.object.get_schedule_by_volunteers(),
-            "generation_in_progress": self.object.eventschedulebeinggenerated_set.filter(result=None, base=self.object).exists(),
+            "generation_in_progress": self.object.generated_as_base.filter(
+                result=None
+            ).exists(),
         }
         return super().get_context_data(**kwargs)
 
@@ -341,24 +349,27 @@ class ScheduleGenerateView(generic.detail.SingleObjectMixin, View):
 
         try:
             memo = EventScheduleBeingGenerated(
-                event = self.object,
+                event=self.object,
                 owner=request.user,
                 base=self.base,
                 task_uuid="tbd",
-                result=None
+                result=None,
             )
 
             memo.save()
-            task = generate_schedule.delay(memo, self.object, self.base, FriendMode.AT_BEST)
+            generate_schedule.delay_on_commit(
+                memo, self.object, self.base, FriendMode.AT_BEST
+            )
 
-            memo.task_uuid = task
-            memo.save()
         except IntegrityError:
             pass
 
         if self.base:
             return HttpResponseRedirect(
-                reverse("organizer:schedule_detail", kwargs={"slug": self.object.slug, "id": self.base.id})
+                reverse(
+                    "organizer:schedule_detail",
+                    kwargs={"slug": self.object.slug, "id": self.base.id},
+                )
             )
         return HttpResponseRedirect(
             reverse("organizer:schedule", kwargs={"slug": self.object.slug})

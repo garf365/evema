@@ -27,7 +27,6 @@ class EventWithSchedule(EventWithVolunteers):
         )
 
 
-
 class EventSchedule(models.Model):
     class ScheduleType(models.TextChoices):
         GENERATED = "G", "generated"
@@ -154,15 +153,25 @@ class EventSchedule(models.Model):
 
         return schedule
 
+
 class EventScheduleBeingGenerated(models.Model):
     event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    base = models.ForeignKey(EventSchedule, on_delete=models.SET_NULL, null=True, blank=True, related_name="+") 
+    base = models.ForeignKey(
+        EventSchedule,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="generated_as_base",
+    )
     task_uuid = models.CharField(max_length=36, null=False, blank=False)
-    result = models.ForeignKey(EventSchedule, on_delete=models.CASCADE, null=True, blank=True)
+    result = models.ForeignKey(
+        EventSchedule, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
-        unique_together = ('event', 'result')
+        unique_together = ("event", "result")
+
 
 class EventScheduleSlot(models.Model):
     schedule = models.ForeignKey(EventSchedule, on_delete=models.CASCADE, null=False)
