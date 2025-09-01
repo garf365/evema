@@ -2,13 +2,13 @@ import logging
 from enum import Enum
 
 from pulp import (
-    PULP_CBC_CMD,
     LpMinimize,
     LpProblem,
     LpStatus,
     LpStatusOptimal,
-    LpVariable,
     lpSum,
+    LpVariable,
+    PULP_CBC_CMD,
     value,
 )
 
