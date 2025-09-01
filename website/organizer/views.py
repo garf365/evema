@@ -12,7 +12,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.timezone import now
-from django.views import View, generic
+from django.views import generic, View
 from event.forms import EventBaseForm
 from volunteers.forms import AvailabilityUpdateDeleteFormSet, FriendshipEditForm
 from volunteers.models import VolunteerAvailability, VolunteerSlot
