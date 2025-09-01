@@ -44,6 +44,9 @@ class Role(models.Model):
 
     with_validation_email = models.BooleanField(null=False, default=True)
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return self.name
 
@@ -51,10 +54,3 @@ class Role(models.Model):
     def slot(self):
         return Slot(self.start_date, self.end_date)
 
-    @property
-    def slots_for_event(self):
-        return [
-            slot
-            for slot in self.event.schedule_slots()
-            if slot.is_contained_by(self.slot)
-        ]

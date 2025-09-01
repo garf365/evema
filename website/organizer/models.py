@@ -26,7 +26,16 @@ class EventWithSchedule(EventWithVolunteers):
             self.slot_duration_schedule, self.start_date, self.end_date
         )
 
-
+class RoleWithSchedule(Role):
+    event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
+    @property
+    def slots_for_event(self):
+        return [
+            slot
+            for slot in self.event.schedule_slots()
+            if slot.is_contained_by(self.slot)
+        ]
+    
 class EventSchedule(models.Model):
     class ScheduleType(models.TextChoices):
         GENERATED = "G", "generated"
@@ -180,7 +189,7 @@ class EventScheduleSlot(models.Model):
     )
     start_date = models.DateTimeField(null=False)
     end_date = models.DateTimeField(null=False)
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    role = models.ForeignKey(RoleWithSchedule, on_delete=models.SET_NULL, null=True, blank=True)
     position = models.IntegerField(null=False, default=0)
     fixed = models.BooleanField(default=False)
 

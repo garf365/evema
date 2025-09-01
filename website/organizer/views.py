@@ -13,11 +13,11 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views import View, generic
-from event.forms import EventBaseForm, RolesFormSet
+from event.forms import EventBaseForm
 from volunteers.forms import AvailabilityUpdateDeleteFormSet, FriendshipEditForm
 from volunteers.models import VolunteerAvailability, VolunteerSlot
 
-from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet
+from .forms import ScheduleEditForm, ScheduleEventHiddenFormSet, RolesFormSet
 from .models import (
     EventSchedule,
     EventScheduleBeingGenerated,

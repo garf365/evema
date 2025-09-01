@@ -54,6 +54,9 @@ class EventWithVolunteers(Event):
 
     convention = models.FileField(upload_to=event_directory_path, null=True, blank=True)
 
+    class Meta:
+        abstract = True
+
     def volunteer_slots(self):
         return Slot.create_slots(
             self.slot_duration_volunteer, self.start_date, self.end_date
