@@ -12,6 +12,7 @@ def register_models_to_admin(models_module, module_base):
         if (
             issubclass(obj, django_models.Model)
             and obj.__module__.split(".")[0] == module_base
+            and not obj._meta.abstract
         ):
             logger.debug(
                 "Registering model '%s' from module '%s' in admin", name, module_base
