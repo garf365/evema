@@ -106,6 +106,7 @@ class ScheduleNewView(generic.detail.SingleObjectMixin, generic.TemplateView):
         )
         slots = []
         for role in self.object.role_set.all():
+            role = role.rolewithschedule
             for position in range(0, role.occurence):
                 for slot in role.slots_for_event:
                     slots.append(
@@ -141,7 +142,7 @@ class ScheduleNewView(generic.detail.SingleObjectMixin, generic.TemplateView):
                 "roles": [
                     x
                     for role in self.object.role_set.order_by("order")
-                    for x in zip([role] * role.occurence, range(0, role.occurence))
+                    for x in zip([role.rolewithschedule] * role.occurence, range(0, role.occurence))
                 ],
                 "volunteers": {
                     v: {"availables": v.slots_for_event, "roles": {}}
@@ -259,7 +260,7 @@ class ScheduleEditView(generic.detail.SingleObjectMixin, generic.TemplateView):
                 "roles": [
                     x
                     for role in self.object.event.role_set.order_by("order")
-                    for x in zip([role] * role.occurence, range(0, role.occurence))
+                    for x in zip([role.rolewithschedule] * role.occurence, range(0, role.occurence))
                 ],
                 "volunteers": {
                     v: {

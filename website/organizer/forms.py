@@ -5,6 +5,7 @@ from event.forms import EventBaseForm
 
 from django.contrib.admin.widgets import AdminSplitDateTime
 from common.forms import DraggableFormSet
+from common.fields import Slot
 from .models import EventSchedule, EventScheduleSlot, RoleWithSchedule, EventWithSchedule
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
         try:
             role, slot = index
             if (
-                isinstance(role[0], Role)
+                isinstance(role[0], RoleWithSchedule)
                 and isinstance(role[1], int)
                 and isinstance(slot, Slot)
             ):
@@ -73,7 +74,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
         try:
             role, slot = index
             if (
-                isinstance(role[0], Role)
+                isinstance(role[0], RoleWithSchedule)
                 and isinstance(role[1], int)
                 and isinstance(slot, Slot)
             ):

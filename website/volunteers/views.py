@@ -6,7 +6,6 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views import generic
-from django.apps import apps
 from mailer.tasks import send_mails
 
 from .forms import RegisterVolunteerForm
@@ -26,7 +25,7 @@ class IndexView(generic.ListView):
     context_object_name = "latest_events_list"
 
     def get_queryset(self):
-        return apps.get_model(settings.EVEMA_EVENT_MODEL).objects.order_by("-start_date")[:5]
+        return EventWithVolunteers.objects.order_by("-start_date")[:5]
 
 
 class EventView(generic.DetailView):
@@ -36,7 +35,7 @@ class EventView(generic.DetailView):
 
 
 class RegisterAsVolunteer(generic.detail.SingleObjectMixin, generic.FormView):
-    model = settings.EVEMA_EVENT_MODEL
+    model = EventWithVolunteers
     context_object_name = "event"
     template_name = "volunteers/register.html"
     form_class = RegisterVolunteerForm

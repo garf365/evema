@@ -11,6 +11,14 @@ from volunteers.models import EventWithVolunteers, VolunteerAvailability
 
 logger = logging.getLogger(__name__)
 
+class RoleWithSchedule(Role):
+    @property
+    def slots_for_event(self):
+        return [
+            slot
+            for slot in self.event.schedule_slots()
+            if slot.is_contained_by(self.slot)
+        ]
 
 class EventWithSchedule(EventWithVolunteers):
 
@@ -26,14 +34,6 @@ class EventWithSchedule(EventWithVolunteers):
             self.slot_duration_schedule, self.start_date, self.end_date
         )
 
-class RoleWithSchedule(Role):
-    @property
-    def slots_for_event(self):
-        return [
-            slot
-            for slot in self.event.schedule_slots()
-            if slot.is_contained_by(self.slot)
-        ]
     
 class EventSchedule(models.Model):
     class ScheduleType(models.TextChoices):
@@ -42,7 +42,7 @@ class EventSchedule(models.Model):
         BASE = "B", "base"
         EMPTY = "E", "empty"
 
-    event = models.ForeignKey(settings.EVEMA_ROLE_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=200, null=False, default="", blank=True)
     saved_at = models.DateTimeField(default=now, null=False)
     based_on = models.ForeignKey(
@@ -163,7 +163,7 @@ class EventSchedule(models.Model):
 
 
 class EventScheduleBeingGenerated(models.Model):
-    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     base = models.ForeignKey(
         EventSchedule,
@@ -188,7 +188,7 @@ class EventScheduleSlot(models.Model):
     )
     start_date = models.DateTimeField(null=False)
     end_date = models.DateTimeField(null=False)
-    role = models.ForeignKey(settings.EVEMA_ROLE_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    role = models.ForeignKey(RoleWithSchedule, on_delete=models.SET_NULL, null=True, blank=True)
     position = models.IntegerField(null=False, default=0)
     fixed = models.BooleanField(default=False)
 
@@ -205,7 +205,7 @@ class EventScheduleSlot(models.Model):
 
 
 class ScheduleEventRemainder(models.Model):
-    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(EventWithSchedule, on_delete=models.CASCADE, null=False)
     days_before = models.IntegerField(null=False, default=15)
     done_at = models.DateTimeField(null=True, blank=True)
 

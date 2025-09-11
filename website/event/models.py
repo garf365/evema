@@ -1,7 +1,6 @@
 import logging
 
 from common.fields import Slot
-from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
 from django_extensions.db.fields import AutoSlugField
@@ -19,13 +18,10 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
-    class Meta:
-        abstract = True
-
 
 
 class RoleCategory(models.Model):
-    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=200, null=False)
 
     def __str__(self):
@@ -34,7 +30,7 @@ class RoleCategory(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=200, null=False)
-    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=False)
     occurence = models.IntegerField(null=False, default=1)
     order = models.IntegerField(null=False, default=1)
     weight = models.IntegerField(null=False, default=1)
@@ -47,9 +43,6 @@ class Role(models.Model):
     end_date = models.DateTimeField(null=False, default=now)
 
     with_validation_email = models.BooleanField(null=False, default=True)
-
-    class Meta:
-        abstract = True
 
     def __str__(self):
         return self.name

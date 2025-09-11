@@ -54,9 +54,6 @@ class EventWithVolunteers(Event):
 
     convention = models.FileField(upload_to=event_directory_path, null=True, blank=True)
 
-    class Meta:
-        abstract = True
-
     def volunteer_slots(self):
         return Slot.create_slots(
             self.slot_duration_volunteer, self.start_date, self.end_date
@@ -69,7 +66,7 @@ class EventWithVolunteers(Event):
 
 
 class VolunteerAvailability(models.Model):
-    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(EventWithVolunteers, on_delete=models.CASCADE, null=False)
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=False)
     # TODO make any number of friends possible
     friend = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
