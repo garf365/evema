@@ -48,7 +48,7 @@ class EventWithVolunteers(Event):
 
     volunteers = models.ManyToManyField(
         Volunteer,
-        through="VolunteerAvailability",
+        through="volunteers.VolunteerAvailability",
         through_fields=("event", "volunteer"),
     )
 
@@ -69,7 +69,7 @@ class EventWithVolunteers(Event):
 
 
 class VolunteerAvailability(models.Model):
-    event = models.ForeignKey(EventWithVolunteers, on_delete=models.CASCADE, null=False)
+    event = models.ForeignKey(settings.EVEMA_EVENT_MODEL, on_delete=models.CASCADE, null=False)
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=False)
     # TODO make any number of friends possible
     friend = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)

@@ -87,6 +87,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
         except (IndexError, TypeError):
             pass
         return super().__getitem__(index)
+
 class ScheduleEventHiddenFormSet(
     forms.inlineformset_factory(
         EventSchedule,
