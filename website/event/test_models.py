@@ -1,10 +1,11 @@
-from django.test import TestCase
 from datetime import datetime
 
-from .models import Event, RoleCategory, Role
-
 from common.fields import Slot
+from django.test import TestCase
 from model_bakery import baker
+
+from .models import Event, Role, RoleCategory
+
 
 class EventModelTests(TestCase):
     def test_should_str_return_name(self):
@@ -20,7 +21,8 @@ class RoleCategoryTests(TestCase):
 
 class RoleTests(TestCase):
     def setUp(self):
-        self.role = baker.make(Role,
+        self.role = baker.make(
+            Role,
             name="tata",
             start_date=datetime.fromisoformat("2025-06-01T08:00:00+02:00"),
             end_date=datetime.fromisoformat("2025-06-01T10:00:00+02:00"),

@@ -1,12 +1,17 @@
 import logging
 
+from common.fields import Slot
+from common.forms import DraggableFormSet
 from django import forms
+from django.contrib.admin.widgets import AdminSplitDateTime
 from event.forms import EventBaseForm
 
-from django.contrib.admin.widgets import AdminSplitDateTime
-from common.forms import DraggableFormSet
-from common.fields import Slot
-from .models import EventSchedule, EventScheduleSlot, RoleWithSchedule, EventWithSchedule
+from .models import (
+    EventSchedule,
+    EventScheduleSlot,
+    EventWithSchedule,
+    RoleWithSchedule,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +21,6 @@ class ScheduleEditForm(EventBaseForm):
     as_base = forms.BooleanField(required=False)
     name = forms.CharField(required=False)
     no_delete = forms.BooleanField(required=False)
-
 
 
 class RolesFormSet(
@@ -88,6 +92,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
         except (IndexError, TypeError):
             pass
         return super().__getitem__(index)
+
 
 class ScheduleEventHiddenFormSet(
     forms.inlineformset_factory(

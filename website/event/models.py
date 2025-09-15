@@ -50,4 +50,3 @@ class Role(models.Model):
     @property
     def slot(self):
         return Slot(self.start_date, self.end_date)
-
