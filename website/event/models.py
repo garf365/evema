@@ -33,13 +33,16 @@ class Role(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=False)
     occurence = models.IntegerField(null=False, default=1)
     order = models.IntegerField(null=False, default=1)
+    # TODO move to organizer
     weight = models.IntegerField(null=False, default=1)
 
     category = models.ForeignKey(
         RoleCategory, null=True, on_delete=models.SET_NULL, blank=True
     )
 
+    # TODO move to organizer
     start_date = models.DateTimeField(null=False, default=now)
+    # TODO move to organizer
     end_date = models.DateTimeField(null=False, default=now)
 
     with_validation_email = models.BooleanField(null=False, default=True)
@@ -47,14 +50,7 @@ class Role(models.Model):
     def __str__(self):
         return self.name
 
+    # TODO move to organizer
     @property
     def slot(self):
         return Slot(self.start_date, self.end_date)
-
-    @property
-    def slots_for_event(self):
-        return [
-            slot
-            for slot in self.event.schedule_slots()
-            if slot.is_contained_by(self.slot)
-        ]

@@ -1,5 +1,4 @@
 import logging
-import math
 
 from django.conf import settings
 from django.core.mail import get_connection
@@ -9,12 +8,12 @@ from celery import shared_task
 logger = logging.getLogger(__name__)
 
 
-def _send_mails(self, messages):
+def _send_mails(task, messages):
     logger.info(
-        f"Try sending {len(messages)} - Try {self.request.retries}/{self.max_retries}"
+        f"Try sending {len(messages)} - Try {task.request.retries}/{task.max_retries}"
     )
     not_sent = []
-    quantile = math.floor(len(messages) / 100)
+    quantile = 100 / len(messages)
     done = 0
     try:
         with get_connection() as connection:
@@ -31,7 +30,7 @@ def _send_mails(self, messages):
 
                 messages.pop(0)
                 done += quantile
-                self.update_state(state="PROGRESS", meta={"progress": done})
+                task.update_state(state="PROGRESS", meta={"progress": done})
     except Exception as e:
         logger.error(f"Exception {e}")
         raise e
@@ -42,13 +41,11 @@ def _send_mails(self, messages):
 
     if not_sent:
         logger.debug(f"Retry for: {not_sent}")
-        raise self.retry(
+        raise task.retry(
             countdown=getattr(settings, "MAILER_DELAY_BEFORE_RETRY", 30 * 60),
             args=[not_sent],
             kwargs={},
         )
-
-    return not_sent
 
 
 @shared_task(

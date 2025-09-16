@@ -48,7 +48,7 @@ class EventWithVolunteers(Event):
 
     volunteers = models.ManyToManyField(
         Volunteer,
-        through="VolunteerAvailability",
+        through="volunteers.VolunteerAvailability",
         through_fields=("event", "volunteer"),
     )
 
