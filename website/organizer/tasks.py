@@ -237,7 +237,7 @@ def generate_schedule(self, memo, event, base, friend_mode):
                             volunteer=volunteer,
                             start_date=slot.start,
                             end_date=slot.end,
-                            role=role[0],
+                            role=role[0].rolewithschedule,
                             position=role[1],
                         )
                     )
@@ -248,7 +248,7 @@ def generate_schedule(self, memo, event, base, friend_mode):
                             schedule=schedule,
                             start_date=slot.start,
                             end_date=slot.end,
-                            role=role[0],
+                            role=role[0].rolewithschedule,
                             position=role[1],
                         )
                     )
