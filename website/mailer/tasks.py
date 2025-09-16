@@ -1,5 +1,4 @@
 import logging
-import math
 
 from django.conf import settings
 from django.core.mail import get_connection

@@ -1,8 +1,8 @@
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import call, MagicMock, patch
 
 from django.test import override_settings, TestCase
 
-from .tasks import send_mass_mails, _send_mails
+from .tasks import _send_mails, send_mass_mails
 
 
 class SendMassMailsTests(TestCase):

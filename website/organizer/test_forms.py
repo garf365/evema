@@ -1,7 +1,7 @@
 from django.test import TestCase
-
-from .forms import ScheduleEventHiddenFormSet, RoleAndSlotBasedHiddenFormSet
 from model_bakery import baker
+
+from .forms import RoleAndSlotBasedHiddenFormSet, ScheduleEventHiddenFormSet
 
 
 class ScheduleEventHiddentFormSetTests(TestCase):
@@ -87,4 +87,4 @@ class RoleAndSlotBaseHiddenFormSetTests(TestCase):
 
     def test_should_raise_index_error_if_not_found(self):
         with self.assertRaises(IndexError):
-            form = self.formset[((self.roles[0], 2), self.slots[0].slot)]
+            self.formset[((self.roles[0], 2), self.slots[0].slot)]
