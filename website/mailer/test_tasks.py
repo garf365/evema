@@ -51,7 +51,7 @@ class SendMailsTests(TestCase):
     @override_settings(MAILER_DELAY_BEFORE_RETRY=4)
     def test_should_resend_mails_in_error(self, mock_get_connection):
         mock_connection = MagicMock()
-        mock_connection.send_messages.side_effect = [1,0,0,1]
+        mock_connection.send_messages.side_effect = [1, 0, 0, 1]
         mock_get_connection.return_value.__enter__.return_value = mock_connection
         mock_task = MagicMock()
         mock_task.retry.return_value = Exception("RETRY")
@@ -59,11 +59,8 @@ class SendMailsTests(TestCase):
         with self.assertRaisesRegex(Exception, "RETRY"):
             _send_mails(mock_task, [1, 2, 3, 4])
 
-
         self.assertEqual(mock_task.retry.call_count, 1)
-        mock_task.retry.assert_has_calls([
-            call(countdown=4, args=[[2,3]], kwargs={})
-        ])
+        mock_task.retry.assert_has_calls([call(countdown=4, args=[[2, 3]], kwargs={})])
         self.assertEqual(mock_task.update_state.call_count, 4)
         mock_task.update_state.assert_has_calls(
             [

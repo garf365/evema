@@ -70,7 +70,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
                 if len(results) == 1:
                     return results[0]
                 raise IndexError(index)
-        except (IndexError, TypeError):
+        except TypeError:
             pass
         return super().__getitem__(index)
 
@@ -89,7 +89,7 @@ class RoleAndSlotBasedHiddenFormSet(forms.BaseInlineFormSet):
                     and form.instance.position == role[1]
                     and form.instance.slot == slot
                 )
-        except (IndexError, TypeError):
+        except TypeError:
             pass
         return super().__getitem__(index)
 
