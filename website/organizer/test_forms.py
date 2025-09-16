@@ -7,15 +7,11 @@ from .forms import RoleAndSlotBasedHiddenFormSet, ScheduleEventHiddenFormSet
 class ScheduleEventHiddentFormSetTests(TestCase):
     def test_should_volunteer_not_required(self):
         schedule = baker.make("organizer.EventSchedule")
-        baker.make(
-            "organizer.RoleWithSchedule", event=schedule.event, _quantity=3
-        )
+        baker.make("organizer.RoleWithSchedule", event=schedule.event, _quantity=3)
         baker.make(
             "volunteers.VolunteerAvailability", event=schedule.event, _quantity=4
         )
-        baker.make(
-            "organizer.EventScheduleSlot", schedule=schedule, _quantity=9
-        )
+        baker.make("organizer.EventScheduleSlot", schedule=schedule, _quantity=9)
 
         formset = ScheduleEventHiddenFormSet(instance=schedule)
 
